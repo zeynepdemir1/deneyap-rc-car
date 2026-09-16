@@ -3,7 +3,7 @@
 #include <WiFi.h>
 #include <WebServer.h>
 
-// Deneyap Kart 1A v2 <-> L298N baglantisi:
+// Deneyap Kart v2 <-> L298N baglantisi:
 // ENA-D7, IN1-D6, IN2-D5  (sol motor / Kanal A)
 // ENB-D0, IN3-D4, IN4-D1  (sag motor / Kanal B)
 uint8_t sol_pwm = D7, sol_in1 = D6, sol_in2 = D5;
@@ -62,6 +62,7 @@ void handleGit(){
 
 void setup(){
   Serial.begin(115200);
+  Serial.println("BASLADI");
 
   pinMode(sol_in1, OUTPUT); pinMode(sol_in2, OUTPUT);
   pinMode(sag_in3, OUTPUT); pinMode(sag_in4, OUTPUT);
@@ -80,7 +81,8 @@ void setup(){
 
   server.on("/", handleRoot);
   server.on("/git", handleGit);
-  server.begin();
+  server.begin();  
+
 }
 
 void loop(){
