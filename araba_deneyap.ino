@@ -3,11 +3,12 @@
 #include <WiFi.h>
 #include <WebServer.h>
 
-// Deneyap Kart v2 <-> L298N baglantisi:
+// Deneyap Kart v2 <-> L298N , HC-SR04 baglantisi:
 // ENA-D7, IN1-D6, IN2-D5  (sol motor / Kanal A)
 // ENB-D0, IN3-D4, IN4-D1  (sag motor / Kanal B)
 uint8_t sol_pwm = D7, sol_in1 = D6, sol_in2 = D5;
 uint8_t sag_pwm = D0, sag_in3 = D4, sag_in4 = D1;
+uint8_t hcsr_trig = D8 , hcsr_echo = D9 ;
 
 // Donanımsal PWM (LEDC) kanalları — loop() bloklansa bile PWM bağımsız üretilir
 uint8_t sol_kanal = 0, sag_kanal = 1;
@@ -60,12 +61,41 @@ void handleGit(){
   server.send(200, "text/plain", "OK");
 }
 
+float mesafe_olc(){
+  // 1. trig'i temizle: LOW yap, 2 mikrosaniye bekle
+  //    kullanacağın fonksiyonlar: digitalWrite, delayMicroseconds
+  digitalWrite(hcsr_trig , LOW);
+  delayMicroseconds(2);
+  // 2. trig'i 10 mikrosaniye HIGH yap, sonra tekrar LOW yap
+  //    aynı iki fonksiyon
+  digitalWrite(hcsr_trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(hcsr_trig, LOW);
+
+  // 3. echo'nun HIGH kaldığı süreyi ölç, bir değişkene at
+  //    unsigned long sure = pulseIn(...);
+  unsigned long sure = pulseIn(hcsr_echo , HIGH , 25000);
+
+  // 4. süreyi mesafeye çevir
+  //    ses hızı 0.0343 cm/mikrosaniye
+  //    DİKKAT: ölçtüğün süre gidiş-dönüş, mesafe tek yön
+  float mesafe = (sure* 0.0343)/2 ;
+  if(mesafe > 400 || mesafe < 2){
+    return -1;
+  }
+  // 5. mesafeyi return et
+  return mesafe;
+}
+
+
 void setup(){
   Serial.begin(115200);
   Serial.println("BASLADI");
 
   pinMode(sol_in1, OUTPUT); pinMode(sol_in2, OUTPUT);
   pinMode(sag_in3, OUTPUT); pinMode(sag_in4, OUTPUT);
+  pinMode(hcsr_echo, INPUT);
+  pinMode(hcsr_trig, OUTPUT);
 
   ledcSetup(sol_kanal, pwm_frekans, pwm_cozunurluk);
   ledcSetup(sag_kanal, pwm_frekans, pwm_cozunurluk);
@@ -87,5 +117,13 @@ void setup(){
 
 void loop(){
   server.handleClient();
+  float mesafe = mesafe_olc();
+  if(mesafe < 0){
+    Serial.println("olcum yok");
+  }
+  else{
+  Serial.println(mesafe);
+  }
+  delay(100);
 }
 
