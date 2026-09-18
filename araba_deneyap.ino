@@ -33,8 +33,8 @@ void yon_ayarla(uint8_t m){
   }
 }
 
-void pwm_guncelle(){
-  uint8_t duty = (mod == 0) ? 0 : hareket_duty;
+void pwm_guncelle(uint8_t m){
+  uint8_t duty = (m == 0) ? 0 : hareket_duty;
   ledcWrite(sol_kanal, duty);
   ledcWrite(sag_kanal, duty);
 }
@@ -55,8 +55,6 @@ void handleGit(){
   if(server.hasArg("m")){
     long deger = server.arg("m").toInt();
     mod = (deger >= 1 && deger <= 4) ? (uint8_t)deger : 0; // gecersiz/eksik komut -> guvenli DUR
-    yon_ayarla(mod);
-    pwm_guncelle();
   }
   server.send(200, "text/plain", "OK");
 }
@@ -80,7 +78,7 @@ float mesafe_olc(){
   //    ses hızı 0.0343 cm/mikrosaniye
   //    DİKKAT: ölçtüğün süre gidiş-dönüş, mesafe tek yön
   float mesafe = (sure* 0.0343)/2 ;
-  if(mesafe > 400 || mesafe < 2){
+  if(mesafe > 400 || mesafe < 3){
     return -1;
   }
   // 5. mesafeyi return et
@@ -103,7 +101,7 @@ void setup(){
   ledcAttachPin(sag_pwm, sag_kanal);
 
   yon_ayarla(mod);
-  pwm_guncelle();
+  pwm_guncelle(mod);
 
   WiFi.softAP(ap_ssid, ap_sifre);
   Serial.print("AP IP adresi: ");
@@ -118,12 +116,15 @@ void setup(){
 void loop(){
   server.handleClient();
   float mesafe = mesafe_olc();
-  if(mesafe < 0){
-    Serial.println("olcum yok");
+
+
+  uint8_t uygulanan_mod=mod;
+
+  if((mesafe < 0 || mesafe<=20) &&mod==1){
+      uygulanan_mod=0;
   }
-  else{
-  Serial.println(mesafe);
-  }
+  yon_ayarla(uygulanan_mod);
+  pwm_guncelle(uygulanan_mod);
   delay(100);
 }
 
