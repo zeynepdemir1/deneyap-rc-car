@@ -1,6 +1,6 @@
-Dallar Arası Geçiş
-git checkout main
-git checkout esp32-surumu
+- **Dallar Arası Geçiş** 
+- git checkout main
+- git checkout esp32-surumu
 
 # deneyap-rc-car — ESP32 sürümü
 
