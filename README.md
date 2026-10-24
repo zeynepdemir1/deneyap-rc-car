@@ -399,3 +399,7 @@ Sonra kendi değerlerini gir. Şifre **en az 8 karakter** olmalı, yoksa
 **USB ve dış besleme birlikte**
 - ESP32 DevKit'lerin çoğunda USB ile dış besleme arasında koruma yoktur.
   Kod yüklerken dış besleme kablosunu çıkar, pille çalıştırırken USB'yi çıkar.
+
+
+  - **NOT**
+  - Diskler 20 yarıklı.
